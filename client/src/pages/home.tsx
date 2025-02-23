@@ -61,7 +61,7 @@ export default function Home() {
     try {
       const qr = new QRCode({
         text: formattedContent,
-        size: size,
+        size,
         errorLevel: errorCorrection,
         backgroundColor: bgColor,
         foregroundColor: fgColor,
@@ -72,7 +72,7 @@ export default function Home() {
                  style === 'sharp' ? 'square' : 'square',
       });
 
-      return qr.toDataUrl();
+      return qr.toDataURL();
     } catch (error) {
       console.error('QR Code generation error:', error);
       return null;
