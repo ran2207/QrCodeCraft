@@ -35,55 +35,6 @@ function formatContent(type: string, content: string): string {
   }
 }
 
-// React component for rendering custom QR code cells
-const QRCustomCell = ({ style, x, y, size, color }: { style: string; x: number; y: number; size: number; color: string }) => {
-  switch (style) {
-    case "dots":
-      return (
-        <circle
-          cx={x + size / 2}
-          cy={y + size / 2}
-          r={size / 2}
-          fill={color}
-        />
-      );
-    case "rounded":
-      return (
-        <rect
-          x={x}
-          y={y}
-          width={size}
-          height={size}
-          rx={size / 3}
-          ry={size / 3}
-          fill={color}
-        />
-      );
-    case "classy":
-      return (
-        <rect
-          x={x}
-          y={y}
-          width={size}
-          height={size}
-          rx={size / 4}
-          ry={size / 4}
-          fill={color}
-        />
-      );
-    default:
-      return (
-        <rect
-          x={x}
-          y={y}
-          width={size}
-          height={size}
-          fill={color}
-        />
-      );
-  }
-};
-
 export default function Home() {
   const { toast } = useToast();
   const form = useForm<InsertQrCode>({
@@ -102,6 +53,56 @@ export default function Home() {
   const { content, contentType, size, errorCorrection, style, fgColor, bgColor } = form.watch();
   const qrCodeValid = useMemo(() => content.length > 0, [content]);
   const formattedContent = useMemo(() => formatContent(contentType, content), [contentType, content]);
+
+  // QR code cell renderer based on style
+  const renderCell = (props: { x: number; y: number; size: number; index: number }) => {
+    switch (style) {
+      case "dots":
+        return (
+          <circle
+            cx={props.x + props.size / 2}
+            cy={props.y + props.size / 2}
+            r={props.size / 2}
+            fill={fgColor}
+          />
+        );
+      case "rounded":
+        return (
+          <rect
+            x={props.x}
+            y={props.y}
+            width={props.size}
+            height={props.size}
+            rx={props.size / 3}
+            ry={props.size / 3}
+            fill={fgColor}
+          />
+        );
+      case "classy":
+        return (
+          <rect
+            x={props.x}
+            y={props.y}
+            width={props.size}
+            height={props.size}
+            rx={props.size / 4}
+            ry={props.size / 4}
+            fill={fgColor}
+          />
+        );
+      case "sharp":
+      default:
+        return (
+          <rect
+            x={props.x}
+            y={props.y}
+            width={props.size}
+            height={props.size}
+            fill={fgColor}
+          />
+        );
+    }
+  };
 
   const handleDownload = () => {
     if (!qrCodeValid) return;
@@ -380,16 +381,8 @@ export default function Home() {
                   bgColor={bgColor}
                   fgColor={fgColor}
                   className="qr-code-svg"
-                  renderAs="svg"
                   includeMargin={true}
-                  {...(style !== "squares" && {
-                    imageSettings: {
-                      src: "",
-                      height: size,
-                      width: size,
-                      excavate: true,
-                    },
-                  })}
+                  renderCell={renderCell}
                 />
               </div>
 
