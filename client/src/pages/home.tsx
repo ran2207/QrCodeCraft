@@ -15,7 +15,14 @@ import { QRCode } from '@cheprasov/qrcode';
 function formatContent(type: string, content: string): string {
   switch (type) {
     case "url":
-      return content.startsWith("http") ? content : `https://${content}`;
+      // Better URL formatting
+      try {
+        const url = new URL(content);
+        return url.toString();
+      } catch {
+        // If URL parsing fails, assume it's a domain and add https://
+        return content.startsWith('http') ? content : `https://${content}`;
+      }
     case "email":
       return `mailto:${content}`;
     case "tel":
@@ -51,20 +58,25 @@ export default function Home() {
   const qrCode = useMemo(() => {
     if (!formattedContent) return null;
 
-    const qr = new QRCode({
-      text: formattedContent,
-      size: size,
-      errorLevel: errorCorrection,
-      backgroundColor: bgColor,
-      foregroundColor: fgColor,
-      padding: 2,
-      dotStyle: style === 'dots' ? 'dots' : 
-                style === 'rounded' ? 'rounded' :
-                style === 'classy' ? 'extra-rounded' :
-                style === 'sharp' ? 'square' : 'square',
-    });
+    try {
+      const qr = new QRCode({
+        text: formattedContent,
+        size: size,
+        errorLevel: errorCorrection,
+        backgroundColor: bgColor,
+        foregroundColor: fgColor,
+        padding: 2,
+        dotStyle: style === 'dots' ? 'dots' : 
+                 style === 'rounded' ? 'rounded' :
+                 style === 'classy' ? 'extra-rounded' :
+                 style === 'sharp' ? 'square' : 'square',
+      });
 
-    return qr.toDataUrl();
+      return qr.toDataUrl();
+    } catch (error) {
+      console.error('QR Code generation error:', error);
+      return null;
+    }
   }, [formattedContent, size, errorCorrection, style, fgColor, bgColor]);
 
   const handleDownload = () => {
