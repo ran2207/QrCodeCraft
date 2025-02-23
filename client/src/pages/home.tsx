@@ -8,19 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { ERROR_CORRECTION_LEVELS, SIZE_OPTIONS, QR_CONTENT_TYPES, STYLE_OPTIONS, DEFAULT_COLORS } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
+import { QRCodeSVG } from "qrcode.react";
 import { Download, Copy } from "lucide-react";
 import { useMemo } from "react";
-import { QRCode } from '@cheprasov/qrcode';
 
+// Helper function to format content based on type
 function formatContent(type: string, content: string): string {
   switch (type) {
     case "url":
-      // Better URL formatting
       try {
         const url = new URL(content);
         return url.toString();
       } catch {
-        // If URL parsing fails, assume it's a domain and add https://
         return content.startsWith('http') ? content : `https://${content}`;
       }
     case "email":
@@ -35,6 +34,55 @@ function formatContent(type: string, content: string): string {
       return content;
   }
 }
+
+// React component for rendering custom QR code cells
+const QRCustomCell = ({ style, x, y, size, color }: { style: string; x: number; y: number; size: number; color: string }) => {
+  switch (style) {
+    case "dots":
+      return (
+        <circle
+          cx={x + size / 2}
+          cy={y + size / 2}
+          r={size / 2}
+          fill={color}
+        />
+      );
+    case "rounded":
+      return (
+        <rect
+          x={x}
+          y={y}
+          width={size}
+          height={size}
+          rx={size / 3}
+          ry={size / 3}
+          fill={color}
+        />
+      );
+    case "classy":
+      return (
+        <rect
+          x={x}
+          y={y}
+          width={size}
+          height={size}
+          rx={size / 4}
+          ry={size / 4}
+          fill={color}
+        />
+      );
+    default:
+      return (
+        <rect
+          x={x}
+          y={y}
+          width={size}
+          height={size}
+          fill={color}
+        />
+      );
+  }
+};
 
 export default function Home() {
   const { toast } = useToast();
@@ -55,42 +103,42 @@ export default function Home() {
   const qrCodeValid = useMemo(() => content.length > 0, [content]);
   const formattedContent = useMemo(() => formatContent(contentType, content), [contentType, content]);
 
-  const qrCode = useMemo(() => {
-    if (!formattedContent) return null;
+  const handleDownload = () => {
+    if (!qrCodeValid) return;
 
-    try {
-      const qr = new QRCode({
-        text: formattedContent,
-        size,
-        errorLevel: errorCorrection,
-        backgroundColor: bgColor,
-        foregroundColor: fgColor,
-        padding: 2,
-        dotStyle: style === 'dots' ? 'dots' : 
-                 style === 'rounded' ? 'rounded' :
-                 style === 'classy' ? 'extra-rounded' :
-                 style === 'sharp' ? 'square' : 'square',
+    const svg = document.querySelector(".qr-code-svg");
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) return;
+
+    canvas.width = size;
+    canvas.height = size;
+
+    const img = new Image();
+    const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    img.src = URL.createObjectURL(blob);
+
+    img.onload = () => {
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0);
+
+      const link = document.createElement("a");
+      link.download = "qrcode.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+
+      toast({
+        title: "QR Code Downloaded",
+        description: "Your QR code has been downloaded successfully.",
       });
 
-      return qr.toDataURL();
-    } catch (error) {
-      console.error('QR Code generation error:', error);
-      return null;
-    }
-  }, [formattedContent, size, errorCorrection, style, fgColor, bgColor]);
-
-  const handleDownload = () => {
-    if (!qrCodeValid || !qrCode) return;
-
-    const link = document.createElement("a");
-    link.download = "qrcode.png";
-    link.href = qrCode;
-    link.click();
-
-    toast({
-      title: "QR Code Downloaded",
-      description: "Your QR code has been downloaded successfully.",
-    });
+      URL.revokeObjectURL(img.src);
+    };
   };
 
   const handleCopy = async () => {
@@ -325,14 +373,24 @@ export default function Home() {
           <Card>
             <CardContent className="pt-6 flex flex-col items-center gap-6">
               <div className="bg-white p-4 rounded-lg" style={{ backgroundColor: bgColor }}>
-                {qrCode && (
-                  <img 
-                    src={qrCode} 
-                    alt="QR Code"
-                    className="max-w-full h-auto"
-                    style={{ maxHeight: `${size}px` }}
-                  />
-                )}
+                <QRCodeSVG
+                  value={formattedContent || " "}
+                  size={size}
+                  level={errorCorrection}
+                  bgColor={bgColor}
+                  fgColor={fgColor}
+                  className="qr-code-svg"
+                  renderAs="svg"
+                  includeMargin={true}
+                  {...(style !== "squares" && {
+                    imageSettings: {
+                      src: "",
+                      height: size,
+                      width: size,
+                      excavate: true,
+                    },
+                  })}
+                />
               </div>
 
               <div className="flex gap-4">
