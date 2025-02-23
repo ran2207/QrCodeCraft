@@ -326,6 +326,36 @@ export default function Home() {
                   fgColor={fgColor}
                   bgColor={bgColor}
                   includeMargin={true}
+                  {...(style === "dots" && {
+                    transform: "scale(0.95)",
+                    moduleRender: (qrProps) => (
+                      <circle
+                        {...qrProps}
+                        r={qrProps.width / 2}
+                        fill={fgColor}
+                      />
+                    ),
+                  })}
+                  {...(style === "rounded" && {
+                    moduleRender: (qrProps) => (
+                      <rect
+                        {...qrProps}
+                        rx={qrProps.width / 3}
+                        ry={qrProps.height / 3}
+                        fill={fgColor}
+                      />
+                    ),
+                  })}
+                  {...(style === "classy" && {
+                    moduleRender: (qrProps) => (
+                      <rect
+                        {...qrProps}
+                        rx={qrProps.width / 6}
+                        ry={qrProps.height / 6}
+                        fill={fgColor}
+                      />
+                    ),
+                  })}
                   style={{
                     shapeRendering: style === "sharp" ? "crispEdges" : "geometricPrecision",
                   }}
