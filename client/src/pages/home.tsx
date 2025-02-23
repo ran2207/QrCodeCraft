@@ -8,17 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { ERROR_CORRECTION_LEVELS, SIZE_OPTIONS, QR_CONTENT_TYPES, STYLE_OPTIONS, DEFAULT_COLORS } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-import { QRCodeSVG } from "qrcode.react";
 import { Download, Copy } from "lucide-react";
 import { useMemo } from "react";
-
-// Type for QR code module props
-interface QRModuleProps {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
+import { QRCode } from '@cheprasov/qrcode';
 
 function formatContent(type: string, content: string): string {
   switch (type) {
@@ -56,41 +48,37 @@ export default function Home() {
   const qrCodeValid = useMemo(() => content.length > 0, [content]);
   const formattedContent = useMemo(() => formatContent(contentType, content), [contentType, content]);
 
+  const qrCode = useMemo(() => {
+    if (!formattedContent) return null;
+
+    const qr = new QRCode({
+      text: formattedContent,
+      size: size,
+      errorLevel: errorCorrection,
+      backgroundColor: bgColor,
+      foregroundColor: fgColor,
+      padding: 2,
+      dotStyle: style === 'dots' ? 'dots' : 
+                style === 'rounded' ? 'rounded' :
+                style === 'classy' ? 'extra-rounded' :
+                style === 'sharp' ? 'square' : 'square',
+    });
+
+    return qr.toDataUrl();
+  }, [formattedContent, size, errorCorrection, style, fgColor, bgColor]);
+
   const handleDownload = () => {
-    if (!qrCodeValid) return;
+    if (!qrCodeValid || !qrCode) return;
 
-    const svg = document.querySelector("svg");
-    if (!svg) return;
+    const link = document.createElement("a");
+    link.download = "qrcode.png";
+    link.href = qrCode;
+    link.click();
 
-    // Create a canvas
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Set canvas size to match SVG
-    canvas.width = size;
-    canvas.height = size;
-
-    // Create an image from the SVG
-    const img = new Image();
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    img.src = URL.createObjectURL(svgBlob);
-
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0);
-      const link = document.createElement("a");
-      link.download = "qrcode.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-
-      toast({
-        title: "QR Code Downloaded",
-        description: "Your QR code has been downloaded successfully.",
-      });
-
-      URL.revokeObjectURL(img.src);
-    };
+    toast({
+      title: "QR Code Downloaded",
+      description: "Your QR code has been downloaded successfully.",
+    });
   };
 
   const handleCopy = async () => {
@@ -108,47 +96,6 @@ export default function Home() {
         description: "Failed to copy to clipboard.",
         variant: "destructive",
       });
-    }
-  };
-
-  // Get module render function based on style
-  const getModuleRender = (style: string) => {
-    switch (style) {
-      case "dots":
-        return ({ left, top, width, height }: QRModuleProps) => (
-          <circle
-            cx={left + width / 2}
-            cy={top + height / 2}
-            r={width / 2}
-            fill={fgColor}
-          />
-        );
-      case "rounded":
-        return ({ left, top, width, height }: QRModuleProps) => (
-          <rect
-            x={left}
-            y={top}
-            width={width}
-            height={height}
-            rx={width / 3}
-            ry={height / 3}
-            fill={fgColor}
-          />
-        );
-      case "classy":
-        return ({ left, top, width, height }: QRModuleProps) => (
-          <rect
-            x={left}
-            y={top}
-            width={width}
-            height={height}
-            rx={width / 6}
-            ry={height / 6}
-            fill={fgColor}
-          />
-        );
-      default:
-        return undefined;
     }
   };
 
@@ -366,19 +313,14 @@ export default function Home() {
           <Card>
             <CardContent className="pt-6 flex flex-col items-center gap-6">
               <div className="bg-white p-4 rounded-lg" style={{ backgroundColor: bgColor }}>
-                <QRCodeSVG
-                  value={formattedContent || " "}
-                  size={size}
-                  level={errorCorrection}
-                  className="max-w-full h-auto"
-                  fgColor={fgColor}
-                  bgColor={bgColor}
-                  includeMargin={true}
-                  style={{
-                    shapeRendering: style === "sharp" ? "crispEdges" : "geometricPrecision",
-                  }}
-                  moduleRender={getModuleRender(style)}
-                />
+                {qrCode && (
+                  <img 
+                    src={qrCode} 
+                    alt="QR Code"
+                    className="max-w-full h-auto"
+                    style={{ maxHeight: `${size}px` }}
+                  />
+                )}
               </div>
 
               <div className="flex gap-4">
