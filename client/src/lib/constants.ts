@@ -24,4 +24,12 @@ export const QR_CONTENT_TYPES = [
 export const STYLE_OPTIONS = [
   { value: "squares", label: "Squares" },
   { value: "dots", label: "Dots" },
+  { value: "rounded", label: "Rounded" },
+  { value: "classy", label: "Classy" },
+  { value: "sharp", label: "Sharp Edges" },
 ] as const;
+
+export const DEFAULT_COLORS = {
+  fgColor: "#000000",
+  bgColor: "#FFFFFF",
+};

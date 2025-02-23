@@ -9,6 +9,8 @@ export const qrCodes = pgTable("qr_codes", {
   size: integer("size").notNull(),
   errorCorrection: text("error_correction").notNull(),
   style: text("style").notNull(),
+  fgColor: text("fg_color").notNull(),
+  bgColor: text("bg_color").notNull(),
 });
 
 export const insertQrCodeSchema = createInsertSchema(qrCodes)
@@ -18,13 +20,17 @@ export const insertQrCodeSchema = createInsertSchema(qrCodes)
     size: true,
     errorCorrection: true,
     style: true,
+    fgColor: true,
+    bgColor: true,
   })
   .extend({
     content: z.string().min(1, "Content is required"),
     contentType: z.enum(["text", "url", "email", "tel", "sms", "wifi"]),
     size: z.number().min(128).max(512),
     errorCorrection: z.enum(["L", "M", "Q", "H"]),
-    style: z.enum(["squares", "dots"]),
+    style: z.enum(["squares", "dots", "rounded", "classy", "sharp"]),
+    fgColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid color format"),
+    bgColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid color format"),
   });
 
 export type InsertQrCode = z.infer<typeof insertQrCodeSchema>;

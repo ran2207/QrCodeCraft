@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { ERROR_CORRECTION_LEVELS, SIZE_OPTIONS, QR_CONTENT_TYPES, STYLE_OPTIONS } from "@/lib/constants";
+import { ERROR_CORRECTION_LEVELS, SIZE_OPTIONS, QR_CONTENT_TYPES, STYLE_OPTIONS, DEFAULT_COLORS } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 import { QRCodeSVG as QRCode } from "qrcode.react";
 import { Download, Copy } from "lucide-react";
@@ -39,10 +39,12 @@ export default function Home() {
       size: 256,
       errorCorrection: "M",
       style: "squares",
+      fgColor: DEFAULT_COLORS.fgColor,
+      bgColor: DEFAULT_COLORS.bgColor,
     },
   });
 
-  const { content, contentType, size, errorCorrection, style } = form.watch();
+  const { content, contentType, size, errorCorrection, style, fgColor, bgColor } = form.watch();
   const qrCodeValid = useMemo(() => content.length > 0, [content]);
   const formattedContent = useMemo(() => formatContent(contentType, content), [contentType, content]);
 
@@ -199,6 +201,58 @@ export default function Home() {
                     )}
                   />
 
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="fgColor"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Foreground Color</FormLabel>
+                          <FormControl>
+                            <div className="flex gap-2">
+                              <Input 
+                                type="color" 
+                                {...field}
+                                className="w-12 h-9 p-1 cursor-pointer"
+                              />
+                              <Input 
+                                type="text" 
+                                value={field.value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                className="flex-1"
+                              />
+                            </div>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="bgColor"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Background Color</FormLabel>
+                          <FormControl>
+                            <div className="flex gap-2">
+                              <Input 
+                                type="color" 
+                                {...field}
+                                className="w-12 h-9 p-1 cursor-pointer"
+                              />
+                              <Input 
+                                type="text" 
+                                value={field.value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                className="flex-1"
+                              />
+                            </div>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
                   <FormField
                     control={form.control}
                     name="size"
@@ -262,16 +316,18 @@ export default function Home() {
 
           <Card>
             <CardContent className="pt-6 flex flex-col items-center gap-6">
-              <div className="bg-white p-4 rounded-lg">
+              <div className="bg-white p-4 rounded-lg" style={{ backgroundColor: bgColor }}>
                 <QRCode
                   value={formattedContent || " "}
                   size={size}
                   level={errorCorrection}
                   className="max-w-full h-auto"
-                  renderAs={style === "dots" ? "canvas" : "svg"}
-                  imageSettings={{
-                    src: "",
-                    excavate: true,
+                  renderAs="svg"
+                  fgColor={fgColor}
+                  bgColor={bgColor}
+                  includeMargin={true}
+                  style={{
+                    shapeRendering: style === "sharp" ? "crispEdges" : "geometricPrecision",
                   }}
                 />
               </div>
