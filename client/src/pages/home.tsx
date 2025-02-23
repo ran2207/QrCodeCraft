@@ -8,9 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { ERROR_CORRECTION_LEVELS, SIZE_OPTIONS, QR_CONTENT_TYPES, STYLE_OPTIONS, DEFAULT_COLORS } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-import { QRCodeSVG as QRCode } from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 import { Download, Copy } from "lucide-react";
 import { useMemo } from "react";
+
+// Type for QR code module props
+interface QRModuleProps {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
 
 function formatContent(type: string, content: string): string {
   switch (type) {
@@ -100,6 +108,47 @@ export default function Home() {
         description: "Failed to copy to clipboard.",
         variant: "destructive",
       });
+    }
+  };
+
+  // Get module render function based on style
+  const getModuleRender = (style: string) => {
+    switch (style) {
+      case "dots":
+        return ({ left, top, width, height }: QRModuleProps) => (
+          <circle
+            cx={left + width / 2}
+            cy={top + height / 2}
+            r={width / 2}
+            fill={fgColor}
+          />
+        );
+      case "rounded":
+        return ({ left, top, width, height }: QRModuleProps) => (
+          <rect
+            x={left}
+            y={top}
+            width={width}
+            height={height}
+            rx={width / 3}
+            ry={height / 3}
+            fill={fgColor}
+          />
+        );
+      case "classy":
+        return ({ left, top, width, height }: QRModuleProps) => (
+          <rect
+            x={left}
+            y={top}
+            width={width}
+            height={height}
+            rx={width / 6}
+            ry={height / 6}
+            fill={fgColor}
+          />
+        );
+      default:
+        return undefined;
     }
   };
 
@@ -317,48 +366,18 @@ export default function Home() {
           <Card>
             <CardContent className="pt-6 flex flex-col items-center gap-6">
               <div className="bg-white p-4 rounded-lg" style={{ backgroundColor: bgColor }}>
-                <QRCode
+                <QRCodeSVG
                   value={formattedContent || " "}
                   size={size}
                   level={errorCorrection}
                   className="max-w-full h-auto"
-                  renderAs="svg"
                   fgColor={fgColor}
                   bgColor={bgColor}
                   includeMargin={true}
-                  {...(style === "dots" && {
-                    transform: "scale(0.95)",
-                    moduleRender: (qrProps) => (
-                      <circle
-                        {...qrProps}
-                        r={qrProps.width / 2}
-                        fill={fgColor}
-                      />
-                    ),
-                  })}
-                  {...(style === "rounded" && {
-                    moduleRender: (qrProps) => (
-                      <rect
-                        {...qrProps}
-                        rx={qrProps.width / 3}
-                        ry={qrProps.height / 3}
-                        fill={fgColor}
-                      />
-                    ),
-                  })}
-                  {...(style === "classy" && {
-                    moduleRender: (qrProps) => (
-                      <rect
-                        {...qrProps}
-                        rx={qrProps.width / 6}
-                        ry={qrProps.height / 6}
-                        fill={fgColor}
-                      />
-                    ),
-                  })}
                   style={{
                     shapeRendering: style === "sharp" ? "crispEdges" : "geometricPrecision",
                   }}
+                  moduleRender={getModuleRender(style)}
                 />
               </div>
 
