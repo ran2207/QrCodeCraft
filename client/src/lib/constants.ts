@@ -11,3 +11,17 @@ export const SIZE_OPTIONS = [
   { value: 384, label: "384px" },
   { value: 512, label: "512px" },
 ] as const;
+
+export const QR_CONTENT_TYPES = [
+  { value: "text", label: "Plain Text" },
+  { value: "url", label: "Website URL" },
+  { value: "email", label: "Email Address" },
+  { value: "tel", label: "Phone Number" },
+  { value: "sms", label: "SMS" },
+  { value: "wifi", label: "WiFi Network" },
+] as const;
+
+export const STYLE_OPTIONS = [
+  { value: "squares", label: "Squares" },
+  { value: "dots", label: "Dots" },
+] as const;
