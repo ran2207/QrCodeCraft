@@ -91,6 +91,15 @@ export default function Home() {
           />
         );
       case "sharp":
+        return (
+          <rect
+            x={props.x}
+            y={props.y}
+            width={props.size}
+            height={props.size}
+            fill={fgColor}
+          />
+        );
       default:
         return (
           <rect
@@ -357,7 +366,10 @@ export default function Home() {
                           </FormControl>
                           <SelectContent>
                             {ERROR_CORRECTION_LEVELS.map((level) => (
-                              <SelectItem key={level.value} value={level.value}>
+                              <SelectItem
+                                key={level.value}
+                                value={level.value}
+                              >
                                 {level.label}
                               </SelectItem>
                             ))}
