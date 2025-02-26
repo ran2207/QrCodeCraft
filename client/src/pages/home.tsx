@@ -24,7 +24,15 @@ import {
   MAX_IMAGE_SIZE,
 } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-import { Download, QrCode } from "lucide-react";
+import { 
+  Download, 
+  QrCode,
+  Link2,
+  PaintBucket,
+  Square,
+  Image as ImageIcon,
+  Settings,
+} from "lucide-react";
 import QRCodeStyling from "qr-code-styling";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -32,6 +40,7 @@ export default function Home() {
   const { toast } = useToast();
   const qrRef = useRef<HTMLDivElement>(null);
   const [qrCode, setQrCode] = useState<any>(null);
+  const [hasUploadedImage, setHasUploadedImage] = useState(false);
 
   useEffect(() => {
     try {
@@ -242,6 +251,7 @@ export default function Home() {
       qrCode.update({
         image: imageUrl,
       });
+      setHasUploadedImage(true);
     };
     reader.readAsDataURL(file);
   };
@@ -253,7 +263,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <QrCode className="h-8 w-8" />
+              <QrCode className="h-8 w-8 text-primary" />
               <h1 className="text-2xl font-bold">QR Code Generator</h1>
             </div>
             <ThemeToggle />
@@ -270,7 +280,10 @@ export default function Home() {
               {/* Main Options Card */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Main Options</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Link2 className="h-5 w-5 text-primary" />
+                    Main Options
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
@@ -288,22 +301,6 @@ export default function Home() {
                           </FormItem>
                         )}
                       />
-
-                      {/* Image Upload */}
-                      <FormItem>
-                        <FormLabel>Logo Image</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept={Object.keys(ACCEPTED_IMAGE_TYPES).join(',')}
-                            onChange={handleImageUpload}
-                            className="cursor-pointer"
-                          />
-                        </FormControl>
-                        <p className="text-sm text-muted-foreground">
-                          Max size: 1MB. Supported formats: PNG, JPEG, SVG
-                        </p>
-                      </FormItem>
 
                       {/* Width and Margin Dropdowns */}
                       <div className="grid grid-cols-2 gap-4">
@@ -375,7 +372,10 @@ export default function Home() {
               {/* Dots Options */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Dots Options</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <PaintBucket className="h-5 w-5 text-purple-500" />
+                    Dots Options
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
@@ -523,7 +523,10 @@ export default function Home() {
               {/* Corner Square Options */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Corner Square Options</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Square className="h-5 w-5 text-green-500" />
+                    Corner Square Options
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
@@ -588,65 +591,87 @@ export default function Home() {
               {/* Image Options */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Image Options</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-blue-500" />
+                    Image Options
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
                     <form className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="hideBackgroundDots"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center justify-between">
-                            <FormLabel>Hide Background Dots</FormLabel>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
+                      <FormItem>
+                        <FormLabel>Logo Image</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept={Object.keys(ACCEPTED_IMAGE_TYPES).join(',')}
+                            onChange={handleImageUpload}
+                            className="cursor-pointer"
+                          />
+                        </FormControl>
+                        <p className="text-sm text-muted-foreground">
+                          Max size: 1MB. Supported formats: PNG, JPEG, SVG
+                        </p>
+                      </FormItem>
 
-                      <FormField
-                        control={form.control}
-                        name="imageSize"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Image Size</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min={0.1}
-                                max={1}
-                                step={0.1}
-                                {...field}
-                                onChange={e => field.onChange(parseFloat(e.target.value))}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
+                      {hasUploadedImage && (
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="hideBackgroundDots"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center justify-between">
+                                <FormLabel>Hide Background Dots</FormLabel>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
 
-                      <FormField
-                        control={form.control}
-                        name="imageMargin"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Image Margin</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min={0}
-                                max={50}
-                                {...field}
-                                onChange={e => field.onChange(parseInt(e.target.value))}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
+                          <FormField
+                            control={form.control}
+                            name="imageSize"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Image Size</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    min={0.1}
+                                    max={1}
+                                    step={0.1}
+                                    {...field}
+                                    onChange={e => field.onChange(parseFloat(e.target.value))}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="imageMargin"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Image Margin</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={50}
+                                    {...field}
+                                    onChange={e => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )}
                     </form>
                   </Form>
                 </CardContent>
@@ -655,7 +680,10 @@ export default function Home() {
               {/* QR Options */}
               <Card>
                 <CardHeader>
-                  <CardTitle>QR Options</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5 text-amber-500" />
+                    QR Options
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
@@ -749,7 +777,7 @@ export default function Home() {
               <div className="sticky top-8 space-y-6">
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="bg-white p-4 rounded-lg flex items-center justify-center" ref={qrRef} />
+                    <div className="bg-white dark:bg-black p-4 rounded-lg flex items-center justify-center" ref={qrRef} />
 
                     <div className="flex gap-4 mt-6">
                       {FILE_EXTENSIONS.map((ext) => (
