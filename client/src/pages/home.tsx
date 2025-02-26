@@ -26,6 +26,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Download, QrCode } from "lucide-react";
 import QRCodeStyling from "qr-code-styling";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Home() {
   const { toast } = useToast();
@@ -250,9 +251,12 @@ export default function Home() {
       {/* Header */}
       <header className="border-b">
         <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-2">
-            <QrCode className="h-8 w-8" />
-            <h1 className="text-2xl font-bold">QR Code Generator</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <QrCode className="h-8 w-8" />
+              <h1 className="text-2xl font-bold">QR Code Generator</h1>
+            </div>
+            <ThemeToggle />
           </div>
         </div>
       </header>
