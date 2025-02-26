@@ -266,7 +266,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <QrCode className="h-8 w-8 text-primary" />
+              <QrCode className="h-8 w-8 text-rose-500 dark:text-rose-400" />
               <h1 className="text-2xl font-bold">QR Code Generator</h1>
             </div>
             <ThemeToggle />
@@ -284,7 +284,7 @@ export default function Home() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Link2 className="h-5 w-5 text-primary" />
+                    <Link2 className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
                     Main Options
                   </CardTitle>
                 </CardHeader>
@@ -809,10 +809,10 @@ export default function Home() {
 
             {/* Right Column - QR Code Preview */}
             <div className="relative">
-              <div className="sticky top-8 space-y-6">
+              <div className="sticky top-28 space-y-6">
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="bg-white dark:bg-black p-4 rounded-lg flex items-center justify-center" ref={qrRef} />
+                    <div className="bg-card dark:bg-background p-4 rounded-lg flex items-center justify-center" ref={qrRef} />
 
                     <div className="flex gap-4 mt-6">
                       {FILE_EXTENSIONS.map((ext) => (
@@ -821,8 +821,9 @@ export default function Home() {
                           onClick={() => handleDownload(ext.value)}
                           disabled={!content}
                           className="flex-1"
+                          variant="outline"
                         >
-                          <Download className="mr-2 h-4 w-4" />
+                          <Download className="mr-2 h-4 w-4 text-primary" />
                           Download {ext.label}
                         </Button>
                       ))}
