@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertQrCodeSchema, type InsertQrCode } from "@shared/schema";
@@ -6,156 +7,111 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { ERROR_CORRECTION_LEVELS, SIZE_OPTIONS, QR_CONTENT_TYPES, STYLE_OPTIONS, DEFAULT_COLORS } from "@/lib/constants";
+import { ERROR_CORRECTION_LEVELS, SIZE_OPTIONS } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-import { QRCodeSVG } from "qrcode.react";
 import { Download, Copy } from "lucide-react";
-import { useMemo } from "react";
+import QRCodeStyling from "qr-code-styling";
 
-// Helper function to format content based on type
-function formatContent(type: string, content: string): string {
-  switch (type) {
-    case "url":
-      try {
-        const url = new URL(content);
-        return url.toString();
-      } catch {
-        return content.startsWith('http') ? content : `https://${content}`;
-      }
-    case "email":
-      return `mailto:${content}`;
-    case "tel":
-      return `tel:${content}`;
-    case "sms":
-      return `sms:${content}`;
-    case "wifi":
-      return `WIFI:T:WPA;S:${content};`;
-    default:
-      return content;
-  }
-}
+const dotTypes = [
+  { value: "square", label: "Square" },
+  { value: "dots", label: "Dots" },
+  { value: "rounded", label: "Rounded" },
+  { value: "classy", label: "Classy" },
+  { value: "extra-rounded", label: "Extra Rounded" },
+];
+
+const cornerSquareTypes = [
+  { value: "square", label: "Square" },
+  { value: "extra-rounded", label: "Extra Rounded" },
+  { value: "dot", label: "Dot" },
+];
 
 export default function Home() {
   const { toast } = useToast();
+  const qrRef = useRef<HTMLDivElement>(null);
+  const [qrCode] = useState(new QRCodeStyling({
+    width: 300,
+    height: 300,
+    margin: 10,
+    type: 'svg',
+    qrOptions: {
+      typeNumber: 0,
+      mode: 'Byte',
+      errorCorrectionLevel: 'Q'
+    },
+    dotsOptions: {
+      type: 'square',
+      color: '#000000'
+    },
+    backgroundOptions: {
+      color: '#FFFFFF',
+    },
+    cornersSquareOptions: {
+      type: 'square',
+      color: '#000000'
+    },
+    cornersDotOptions: {
+      type: 'dot',
+      color: '#000000'
+    },
+  }));
+
   const form = useForm<InsertQrCode>({
     resolver: zodResolver(insertQrCodeSchema),
     defaultValues: {
       content: "",
       contentType: "text",
-      size: 256,
-      errorCorrection: "M",
-      style: "squares",
-      fgColor: DEFAULT_COLORS.fgColor,
-      bgColor: DEFAULT_COLORS.bgColor,
+      size: 300,
+      errorCorrection: "Q",
+      style: "square",
+      fgColor: "#000000",
+      bgColor: "#FFFFFF",
     },
   });
 
-  const { content, contentType, size, errorCorrection, style, fgColor, bgColor } = form.watch();
-  const qrCodeValid = useMemo(() => content.length > 0, [content]);
-  const formattedContent = useMemo(() => formatContent(contentType, content), [contentType, content]);
+  const { content, size, errorCorrection, style, fgColor, bgColor } = form.watch();
 
-  // QR code cell renderer based on style
-  const renderCell = (props: { x: number; y: number; size: number; index: number }) => {
-    switch (style) {
-      case "dots":
-        return (
-          <circle
-            cx={props.x + props.size / 2}
-            cy={props.y + props.size / 2}
-            r={props.size / 2}
-            fill={fgColor}
-          />
-        );
-      case "rounded":
-        return (
-          <rect
-            x={props.x}
-            y={props.y}
-            width={props.size}
-            height={props.size}
-            rx={props.size / 3}
-            ry={props.size / 3}
-            fill={fgColor}
-          />
-        );
-      case "classy":
-        return (
-          <rect
-            x={props.x}
-            y={props.y}
-            width={props.size}
-            height={props.size}
-            rx={props.size / 4}
-            ry={props.size / 4}
-            fill={fgColor}
-          />
-        );
-      case "sharp":
-        return (
-          <rect
-            x={props.x}
-            y={props.y}
-            width={props.size}
-            height={props.size}
-            fill={fgColor}
-          />
-        );
-      default:
-        return (
-          <rect
-            x={props.x}
-            y={props.y}
-            width={props.size}
-            height={props.size}
-            fill={fgColor}
-          />
-        );
+  useEffect(() => {
+    if (qrRef.current) {
+      qrRef.current.innerHTML = '';
+      qrCode.append(qrRef.current);
     }
-  };
+  }, [qrCode]);
+
+  useEffect(() => {
+    if (!content) return;
+    qrCode.update({
+      data: content,
+      dotsOptions: {
+        type: style as any,
+        color: fgColor
+      },
+      backgroundOptions: {
+        color: bgColor
+      },
+      width: size,
+      height: size,
+      qrOptions: {
+        errorCorrectionLevel: errorCorrection as any
+      }
+    });
+  }, [content, style, fgColor, bgColor, size, errorCorrection]);
 
   const handleDownload = () => {
-    if (!qrCodeValid) return;
-
-    const svg = document.querySelector(".qr-code-svg");
-    if (!svg) return;
-
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    if (!ctx) return;
-
-    canvas.width = size;
-    canvas.height = size;
-
-    const img = new Image();
-    const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    img.src = URL.createObjectURL(blob);
-
-    img.onload = () => {
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, size, size);
-      ctx.drawImage(img, 0, 0);
-
-      const link = document.createElement("a");
-      link.download = "qrcode.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-
-      toast({
-        title: "QR Code Downloaded",
-        description: "Your QR code has been downloaded successfully.",
-      });
-
-      URL.revokeObjectURL(img.src);
-    };
+    if (!content) return;
+    qrCode.download({
+      extension: 'png'
+    });
+    toast({
+      title: "QR Code Downloaded",
+      description: "Your QR code has been downloaded successfully.",
+    });
   };
 
   const handleCopy = async () => {
-    if (!qrCodeValid) return;
-
+    if (!content) return;
     try {
-      await navigator.clipboard.writeText(formattedContent);
+      await navigator.clipboard.writeText(content);
       toast({
         title: "Content Copied",
         description: "QR code content has been copied to clipboard.",
@@ -186,52 +142,12 @@ export default function Home() {
                 <form className="space-y-6">
                   <FormField
                     control={form.control}
-                    name="contentType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Content Type</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {QR_CONTENT_TYPES.map((type) => (
-                              <SelectItem
-                                key={type.value}
-                                value={type.value}
-                              >
-                                {type.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
                     name="content"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Content</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder={
-                              contentType === "url" ? "Enter website URL" :
-                              contentType === "email" ? "Enter email address" :
-                              contentType === "tel" ? "Enter phone number" :
-                              contentType === "sms" ? "Enter phone number" :
-                              contentType === "wifi" ? "Enter network name" :
-                              "Enter text"
-                            }
-                            {...field} 
-                          />
+                          <Input placeholder="Enter text or URL" {...field} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -242,7 +158,7 @@ export default function Home() {
                     name="style"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Style</FormLabel>
+                        <FormLabel>Dots Style</FormLabel>
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
@@ -253,12 +169,12 @@ export default function Home() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {STYLE_OPTIONS.map((option) => (
+                            {dotTypes.map((type) => (
                               <SelectItem
-                                key={option.value}
-                                value={option.value}
+                                key={type.value}
+                                value={type.value}
                               >
-                                {option.label}
+                                {type.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -385,23 +301,12 @@ export default function Home() {
 
           <Card>
             <CardContent className="pt-6 flex flex-col items-center gap-6">
-              <div className="bg-white p-4 rounded-lg" style={{ backgroundColor: bgColor }}>
-                <QRCodeSVG
-                  value={formattedContent || " "}
-                  size={size}
-                  level={errorCorrection}
-                  bgColor={bgColor}
-                  fgColor={fgColor}
-                  className="qr-code-svg"
-                  includeMargin={true}
-                  renderCell={renderCell}
-                />
-              </div>
+              <div className="bg-white p-4 rounded-lg" ref={qrRef} />
 
               <div className="flex gap-4">
                 <Button
                   onClick={handleDownload}
-                  disabled={!qrCodeValid}
+                  disabled={!content}
                   className="w-32"
                 >
                   <Download className="mr-2 h-4 w-4" />
@@ -409,7 +314,7 @@ export default function Home() {
                 </Button>
                 <Button
                   onClick={handleCopy}
-                  disabled={!qrCodeValid}
+                  disabled={!content}
                   variant="outline"
                   className="w-32"
                 >
