@@ -26,39 +26,53 @@ import QRCodeStyling from "qr-code-styling";
 export default function Home() {
   const { toast } = useToast();
   const qrRef = useRef<HTMLDivElement>(null);
-  const [qrCode] = useState(new QRCodeStyling({
-    width: DEFAULT_VALUES.size,
-    height: DEFAULT_VALUES.size,
-    type: 'svg',
-    data: '',
-    margin: DEFAULT_VALUES.margin,
-    qrOptions: {
-      typeNumber: DEFAULT_VALUES.typeNumber,
-      mode: 'Byte',
-      errorCorrectionLevel: 'Q'
-    },
-    imageOptions: {
-      hideBackgroundDots: true,
-      imageSize: DEFAULT_VALUES.imageSize,
-      margin: DEFAULT_VALUES.imageMargin,
-      crossOrigin: 'anonymous',
-    },
-    dotsOptions: {
-      type: 'square',
-      color: '#000000'
-    },
-    backgroundOptions: {
-      color: '#FFFFFF',
-    },
-    cornersSquareOptions: {
-      type: 'extra-rounded',
-      color: '#000000'
-    },
-    cornersDotOptions: {
-      type: 'dot',
-      color: '#000000'
-    },
-  }));
+  const [qrCode, setQrCode] = useState<any>(null);
+
+  useEffect(() => {
+    try {
+      const qr = new QRCodeStyling({
+        width: DEFAULT_VALUES.size,
+        height: DEFAULT_VALUES.size,
+        type: 'svg',
+        data: ' ',
+        margin: DEFAULT_VALUES.margin,
+        qrOptions: {
+          typeNumber: DEFAULT_VALUES.typeNumber,
+          mode: 'Byte',
+          errorCorrectionLevel: 'Q'
+        },
+        imageOptions: {
+          hideBackgroundDots: true,
+          imageSize: DEFAULT_VALUES.imageSize,
+          margin: DEFAULT_VALUES.imageMargin,
+          crossOrigin: 'anonymous',
+        },
+        dotsOptions: {
+          type: 'square',
+          color: '#000000'
+        },
+        backgroundOptions: {
+          color: '#FFFFFF',
+        },
+        cornersSquareOptions: {
+          type: 'extra-rounded',
+          color: '#000000'
+        },
+        cornersDotOptions: {
+          type: 'dot',
+          color: '#000000'
+        },
+      });
+      setQrCode(qr);
+    } catch (error) {
+      console.error('Error initializing QR code:', error);
+      toast({
+        title: "Error",
+        description: "Failed to initialize QR code generator",
+        variant: "destructive",
+      });
+    }
+  }, []);
 
   const form = useForm<InsertQrCode>({
     resolver: zodResolver(insertQrCodeSchema),
@@ -70,7 +84,7 @@ export default function Home() {
       dotStyle: "square",
       dotColorType: "single",
       dotColor: "#000000",
-      dotGradient: {type: "linear", rotation: 0},
+      dotGradient: {type: "linear", rotation: 0, colorStops: [{offset: 0, color: "#000000"}, {offset: 1, color: "#000000"}]},
       cornerSquareStyle: "extra-rounded",
       cornerSquareColorType: "single",
       cornerSquareColor: "#000000",
@@ -111,63 +125,73 @@ export default function Home() {
   } = form.watch();
 
   useEffect(() => {
-    if (qrRef.current) {
+    if (qrRef.current && qrCode) {
       qrRef.current.innerHTML = '';
       qrCode.append(qrRef.current);
     }
   }, [qrCode]);
 
   useEffect(() => {
-    if (!content) return;
+    if (!content || !qrCode) return;
 
-    qrCode.update({
-      data: content,
-      width,
-      height,
-      margin,
-      dotsOptions: {
-        type: dotStyle as any,
-        color: dotColor,
-        gradient: dotGradient as any,
-      },
-      cornersSquareOptions: {
-        type: cornerSquareStyle as any,
-        color: cornerSquareColor,
-      },
-      cornersDotOptions: {
-        type: cornerDotStyle as any,
-        color: cornerDotColor,
-      },
-      backgroundOptions: {
-        color: backgroundColor,
-      },
-      imageOptions: {
-        hideBackgroundDots,
-        imageSize,
-        margin: imageMargin,
-      },
-      qrOptions: {
-        typeNumber,
-        mode: qrMode as any,
-        errorCorrectionLevel: errorCorrectionLevel as any,
-      }
-    });
+    try {
+      qrCode.update({
+        data: content,
+        width,
+        height,
+        margin,
+        dotsOptions: {
+          type: dotStyle,
+          color: dotColor,
+          gradient: dotColorType === 'gradient' ? dotGradient : undefined,
+        },
+        cornersSquareOptions: {
+          type: cornerSquareStyle,
+          color: cornerSquareColor,
+        },
+        cornersDotOptions: {
+          type: cornerDotStyle,
+          color: cornerDotColor,
+        },
+        backgroundOptions: {
+          color: backgroundColor,
+        },
+        imageOptions: {
+          hideBackgroundDots,
+          imageSize,
+          margin: imageMargin,
+        },
+        qrOptions: {
+          typeNumber,
+          mode: qrMode,
+          errorCorrectionLevel,
+        }
+      });
+    } catch (error) {
+      console.error('Error updating QR code:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update QR code",
+        variant: "destructive",
+      });
+    }
   }, [
     content, width, height, margin,
-    dotStyle, dotColor, dotGradient,
+    dotStyle, dotColor, dotGradient, dotColorType,
     cornerSquareStyle, cornerSquareColor,
     cornerDotStyle, cornerDotColor,
     backgroundColor, hideBackgroundDots,
     imageSize, imageMargin,
-    qrMode, errorCorrectionLevel, typeNumber
+    qrMode, errorCorrectionLevel, typeNumber,
+    qrCode
   ]);
 
   const handleDownload = async (extension: string) => {
-    if (!content) return;
+    if (!content || !qrCode) return;
 
     try {
       await qrCode.download({
-        extension: extension as any,
+        extension: extension,
       });
 
       toast({
@@ -185,7 +209,7 @@ export default function Home() {
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || !qrCode) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
