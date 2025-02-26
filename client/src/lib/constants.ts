@@ -63,12 +63,34 @@ export const MARGIN_OPTIONS = [
   { value: 30, label: "30px" },
 ] as const;
 
+export const IMAGE_SIZE_OPTIONS = [
+  { value: 0.2, label: "20%" },
+  { value: 0.3, label: "30%" },
+  { value: 0.4, label: "40%" },
+  { value: 0.5, label: "50%" },
+] as const;
+
+export const IMAGE_MARGIN_OPTIONS = [
+  { value: 0, label: "0px" },
+  { value: 5, label: "5px" },
+  { value: 10, label: "10px" },
+  { value: 15, label: "15px" },
+] as const;
+
+export const TYPE_NUMBER_OPTIONS = [
+  { value: 0, label: "Auto" },
+  { value: 1, label: "1" },
+  { value: 2, label: "2" },
+  { value: 3, label: "3" },
+  { value: 4, label: "4" },
+] as const;
+
 export const DEFAULT_VALUES = {
   size: 300,
   margin: 0,
   rotation: 0,
-  imageSize: 0.4,
-  imageMargin: 0,
+  imageSize: 0.3,
+  imageMargin: 5,
   typeNumber: 0,
 } as const;
 
@@ -79,15 +101,6 @@ export const ACCEPTED_IMAGE_TYPES = {
 } as const;
 
 export const MAX_IMAGE_SIZE = 1024 * 1024; // 1MB
-
-export const QR_CONTENT_TYPES = [
-  { value: "text", label: "Plain Text" },
-  { value: "url", label: "Website URL" },
-  { value: "email", label: "Email Address" },
-  { value: "tel", label: "Phone Number" },
-  { value: "sms", label: "SMS" },
-  { value: "wifi", label: "WiFi Network" },
-] as const;
 
 export const DEFAULT_COLORS = {
   fgColor: "#000000",

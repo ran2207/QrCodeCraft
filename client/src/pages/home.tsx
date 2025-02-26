@@ -22,10 +22,13 @@ import {
   MARGIN_OPTIONS,
   ACCEPTED_IMAGE_TYPES,
   MAX_IMAGE_SIZE,
+  IMAGE_SIZE_OPTIONS,
+  IMAGE_MARGIN_OPTIONS,
+  TYPE_NUMBER_OPTIONS,
 } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Download, 
+import {
+  Download,
   QrCode,
   Link2,
   PaintBucket,
@@ -638,16 +641,26 @@ export default function Home() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Image Size</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    min={0.1}
-                                    max={1}
-                                    step={0.1}
-                                    {...field}
-                                    onChange={e => field.onChange(parseFloat(e.target.value))}
-                                  />
-                                </FormControl>
+                                <Select
+                                  value={field.value.toString()}
+                                  onValueChange={(value) => field.onChange(parseFloat(value))}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {IMAGE_SIZE_OPTIONS.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value.toString()}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               </FormItem>
                             )}
                           />
@@ -658,15 +671,26 @@ export default function Home() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Image Margin</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    min={0}
-                                    max={50}
-                                    {...field}
-                                    onChange={e => field.onChange(parseInt(e.target.value))}
-                                  />
-                                </FormControl>
+                                <Select
+                                  value={field.value.toString()}
+                                  onValueChange={(value) => field.onChange(parseInt(value))}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {IMAGE_MARGIN_OPTIONS.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value.toString()}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               </FormItem>
                             )}
                           />
@@ -754,15 +778,26 @@ export default function Home() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Type Number</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min={0}
-                                max={40}
-                                {...field}
-                                onChange={e => field.onChange(parseInt(e.target.value))}
-                              />
-                            </FormControl>
+                            <Select
+                              value={field.value.toString()}
+                              onValueChange={(value) => field.onChange(parseInt(value))}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {TYPE_NUMBER_OPTIONS.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value.toString()}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </FormItem>
                         )}
                       />
