@@ -1,6 +1,6 @@
 {
-  "variant": "professional",
-  "primary": "hsl(222.2 47.4% 11.2%)",
+  "variant": "vibrant",
+  "primary": "#0284c7",
   "appearance": "system",
   "radius": 0.5,
   "dark": {
@@ -8,7 +8,7 @@
     "foreground": "hsl(210 40% 98%)",
     "card": "hsl(222.2 84% 4.9%)",
     "popover": "hsl(222.2 84% 4.9%)",
-    "primary": "hsl(210 40% 98%)",
+    "primary": "hsl(217.2 91.2% 59.8%)",
     "secondary": "hsl(217.2 32.6% 17.5%)",
     "muted": "hsl(217.2 32.6% 17.5%)",
     "accent": "hsl(217.2 32.6% 17.5%)",
@@ -16,7 +16,7 @@
   },
   "light": {
     "background": "hsl(0 0% 100%)",
-    "foreground": "hsl(222.2 84% 4.9%)",
+    "foreground": "hsl(222.2 47.4% 11.2%)",
     "card": "hsl(0 0% 100%)",
     "popover": "hsl(0 0% 100%)",
     "primary": "hsl(222.2 47.4% 11.2%)",
